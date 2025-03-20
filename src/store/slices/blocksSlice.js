@@ -1,4 +1,4 @@
-import { createSlice, current } from "@reduxjs/toolkit";
+import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
   blocks: [
@@ -11,7 +11,34 @@ const initialState = {
           "https://cdn.tbank.ru/static/pages/files/67fdf053-90ea-4ffc-8da0-f58726560f50.png",
       },
     },
-  ]
+    {
+      id: "default-blodfgghdfsgdfck",
+      type: "test",
+      content: {
+        question: "Добро пожаловать в конструктор блоков??????",
+        options: [
+          {
+            text: 'Option 1',
+            key: '1',
+            isCorrect: false,
+            color: '#fff'
+          },
+          {
+            text: 'Option 9991',
+            key: '2',
+            isCorrect: false,
+            color: '#fff'
+          },
+          {
+            text: 'Option 8',
+            key: '122',
+            isCorrect: true,
+            color: 'green'
+          }
+        ]
+      },
+    },
+  ], 
 };
 
 const TITLE = 'title'
@@ -101,15 +128,21 @@ const blocksSlice = createSlice({
         }
           break;
         case TEXT: {
-console.log("action.payload", action.payload, "state", state);
 
+          const findBlock = state.blocks.find(block => block.id === action.payload.block.id)
+
+          if(findBlock) {
+            findBlock.content.text = action.payload.formData.text
+          }
         }
         break;
         case TEST: {
-console.log("action.payload", action.payload, "state", state);
+          const findBlock = state.blocks.find(block => block.id === action.payload.block.id)
 
+          if(findBlock) {
+            findBlock.content = action.payload.formData 
+          }
         }
-        
         break;
       
       }

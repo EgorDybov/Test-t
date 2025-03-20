@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
   updateBlock,
@@ -8,18 +8,37 @@ import {
 } from "../../store/slices/blocksSlice";
 import EditorModal from "../EditorModal/EditorModal";
 import styles from "./Block.module.scss";
+import EditorTextModal from "../EditorModal/EditorTextModal";
+import EditorTestModal from "../EditorModal/EditorTestModal";
 
 const Block = ({ block, isFirst, isLast }) => {
   const [isEditing, setIsEditing] = useState(false);
+  const [isTextEditing, setTextIsEditing] = useState(false);
+  const [isTestEditing, setTestIsEditing] = useState(false);
   const [showAnswer, setShowAnswer] = useState(false);
   const [selectedAnswers, setSelectedAnswers] = useState([]);
   const dispatch = useDispatch();
 
   // TODO: Реализовать функцию редактирования блока
   const handleEdit = () => {
-    setIsEditing(true);
+
+    if(block.type === 'title') {
+      setIsEditing(true);
+    } else if(block.type === 'text') {
+      setTextIsEditing(true);
+    } else if(block.type === 'test') {
+      setTestIsEditing(true);
+    }
+    
     
   };
+  // const handleTextEdit = () => {
+  //   setTextIsEditing(true);
+    
+  // };
+  // const handleQuestionEdit = () => {
+  //   setQuestionIsEditing(true);
+  // };
 
   // TODO: Реализовать функцию сохранения изменений блока
   const handleSave = (newData) => {};
@@ -42,7 +61,18 @@ const Block = ({ block, isFirst, isLast }) => {
   const handleCheckAnswer = () => {};
 
   // TODO: Реализовать определение типа теста (множественный выбор)
-  const isMultipleChoice = false;
+  const isMultipleChoice = useMemo(()=> {
+    let howManyCorrect = 0
+    if(block.type === 'test'){
+      howManyCorrect = block.content.options.reduce((acc, item ) => {
+          if(item.isCorrect) acc++
+        return acc
+      }, 0)
+    }
+    
+    return howManyCorrect > 1
+
+  }, [block])
 
   // TODO: Реализовать проверку правильности ответа
   const isAnswerCorrect = (index) => {
@@ -140,6 +170,18 @@ const Block = ({ block, isFirst, isLast }) => {
       <EditorModal
         isOpen={isEditing}
         onClose={() => setIsEditing(false)}
+        block={block}
+        onSave={handleSave}
+      />
+      <EditorTextModal
+        isOpen={isTextEditing}
+        onClose={() => setTextIsEditing(false)}
+        block={block}
+        onSave={handleSave}
+      />
+      <EditorTestModal
+        isOpen={isTestEditing}
+        onClose={() => setTestIsEditing(false)}
         block={block}
         onSave={handleSave}
       />

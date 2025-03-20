@@ -1,5 +1,6 @@
 import { useDispatch } from "react-redux";
 import { addBlock } from "../../store/slices/blocksSlice";
+
 import styles from "./BlockSelector.module.scss";
 
 const BlockSelector = () => {
