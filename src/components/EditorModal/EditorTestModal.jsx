@@ -1,16 +1,14 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { createPortal } from "react-dom";
 import styles from "./EditorModal.module.scss";
 import { useDispatch, useSelector } from "react-redux";
 import { updateBlock } from "../../store/slices/blocksSlice";
+import { uniqueId } from "lodash";
 
 const EditorTestModal = ({ isOpen, onClose, block, onSave }) => {
   const [formData, setFormData] = useState(block.content);
-  const [options, setOptions] = useState([1, 2, 3]);
+  const [isUpdated, setIsUpdated] = useState(true);
   const dispatch = useDispatch()
-
-  console.log('block content', block.content);
-  
 
   useEffect(() => {
     setFormData(block.content);
@@ -20,15 +18,48 @@ const EditorTestModal = ({ isOpen, onClose, block, onSave }) => {
     e.preventDefault();
     dispatch(updateBlock({formData, block}))
     onClose()
-    console.log('test modal', formData);
-    
-    // Реализуйте логику сохранения
+  
   };
 
+  const disabledOption = useMemo(() => formData.options?.length <= 2, [formData])
+  console.log(formData);
+  
+
+  const disabledSave = useMemo(() => {
+    
+    return (isUpdated && !formData.options?.every(option => !option.isCorrect)) 
+      || formData.options?.every(option => !option.isCorrect 
+      || !formData.options?.every(option => option.text.trim()) || formData.question.trim() === '')
+  }, [isUpdated, formData])
+
+
   const addOption = (e) => {
-    e.preventDefault()
-    setOptions([...options, options.length+1])
+    e.preventDefault();
+
+    const op =  {
+      text: 'New option',
+      key: uniqueId('__option__'),
+      isCorrect: false,
+      color: 'red'
+    }
+    
+    setFormData((prev) => {
+      return ({
+        ...prev,
+        options: [...formData.options, op]
+      })
+    } )
+
+    setIsUpdated(false)
+    
   }
+
+  const removeOption = (key) => {
+      const updateFormData = {...formData, options: formData.options.filter(option => option.key !== key)}
+      setFormData(updateFormData)
+      setIsUpdated(false)
+  }
+  
 
   if (!isOpen) return null;
 
@@ -51,25 +82,27 @@ const EditorTestModal = ({ isOpen, onClose, block, onSave }) => {
               type="text"
               placeholder="Новый вопрос"
               value={formData.question}
-              onChange={(e) =>
+              onChange={(e) => {
                 setFormData({ ...formData, question: e.target.value })
-              }
+                setIsUpdated(false)
+              }}
             />
           </div>
           <div className={styles.formGroup}>
             <label>Варианты ответов:</label>
-           <div>
+            <div>
             {
                 formData.options.map(option => {
                     return <div className={styles.optionGroup} key={option.key}>
                         <input
-                            dataTemp={option.key}
+                            dataoptiontext={option.key}
                             type="text"
                             placeholder="Вариант"
                             value={option.text}
                             onChange={(e) => {
+                              e.preventDefault()
                                 const val = e.target.value
-                                const keyValue =  e.target.getAttribute('datatemp')
+                                const keyValue =  e.target.getAttribute('dataoptiontext')
                                 const options = formData.options.map(option => {
                                     if(option.key === keyValue){
                                       return {
@@ -80,27 +113,50 @@ const EditorTestModal = ({ isOpen, onClose, block, onSave }) => {
                                     return option
                                 })
                                 setFormData({ ...formData, options })
+                                setIsUpdated(false)
                              }
+                             
                             }
                         />
                         <input 
                             type="checkbox" 
                             checked={option.isCorrect}
-                            onChange={(e) =>
-                                setFormData({ ...formData, options: [] })
-                            }
+                            dataoptioncheckbox={option.key}
+                            onChange={(e) => {
+                                
+                              const keyValue = e.target.getAttribute('dataoptioncheckbox')
+                              const options = formData.options.map(option => {
+                                if(option.key === keyValue){
+                                  return {
+                                    ...option,
+                                    isCorrect: !option.isCorrect,
+                                  }
+                                }
+                                return option
+                                })
+                                setFormData({ ...formData, options })
+                                setIsUpdated(false)
+                            }}
                          />
                         <span>Правильный ответ</span>
-                        <button className={styles.removeButton}>Удалить</button>
+                        <button
+                         disabled={disabledOption}
+                         className={styles.removeButton} 
+                         onClick={(event) => {event.preventDefault(); removeOption(option.key)}}  
+                         >
+                          Удалить
+                          </button>
                     </div>
+
                 })
             }
+            
            </div>
           </div>
           <div><button onClick={addOption} className={styles.addButton}>Добавить вариант</button></div>
           
           <div className={styles.buttons}>
-            <button type="submit" className={styles.saveButton}>
+            <button type="submit" className={styles.saveButton} disabled={disabledSave}>
               Сохранить
             </button>
             <button

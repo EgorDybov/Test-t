@@ -1,4 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
+import { uniqueId } from "lodash";
 
 const initialState = {
   blocks: [
@@ -46,7 +47,7 @@ const TEXT = 'text'
 const TEST = 'test'
 
 const getId = () => {
-  return Date.now().toString()
+  return uniqueId('__block__')
 }
 
 const blocksSlice = createSlice({
@@ -90,16 +91,25 @@ const blocksSlice = createSlice({
               question: 'Вопрос ' + ++state.blocks.filter(block => block.type === TEST).length, // question 1
               options: [
                 {
-                  id: getId(),
-                  text: 'text',
+                  text: 'Option 1',
+                  key: getId(),
+                  isCorrect: true,
+                  color: '#fff'
+                  
                 },
                 {
-                  id: getId(),
-                  text: 'text',
+                  text: 'Option 1',
+                  key: getId(),
+                  isCorrect: false,
+                  color: '#fff'
+                  
                 },
                 {
-                  id: getId(),
-                  text: 'text',
+                  text: 'Option 1',
+                  key: getId(),
+                  isCorrect: false,
+                  color: '#fff'
+                  
                 }
               ]
             }

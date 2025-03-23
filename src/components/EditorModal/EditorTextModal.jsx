@@ -1,16 +1,12 @@
 import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import styles from "./EditorModal.module.scss";
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
 import { updateBlock } from "../../store/slices/blocksSlice";
 
 const EditorTextModal = ({ isOpen, onClose, block, onSave }) => {
   const [formData, setFormData] = useState(block.content);
   const dispatch = useDispatch()
-
-const store = useSelector(store => store.blocks)
-console.log('store', store);
-
 
   useEffect(() => {
     setFormData(block.content);
@@ -20,12 +16,13 @@ console.log('store', store);
     e.preventDefault();
     dispatch(updateBlock({formData, block}))
     onClose()
-   
-    
     // Реализуйте логику сохранения
   };
 
   if (!isOpen) return null;
+
+
+
 
   // Пример реализации модального окна для заголовка
   // TODO: Реализовать модальные окна для других типов блоков

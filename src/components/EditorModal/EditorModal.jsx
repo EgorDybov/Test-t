@@ -8,9 +8,6 @@ const EditorModal = ({ isOpen, onClose, block, onSave }) => {
   const [formData, setFormData] = useState(block.content);
   const dispatch = useDispatch()
 
-const store = useSelector(store => store.blocks)
-console.log('store', store);
-
 
   useEffect(() => {
     setFormData(block.content);

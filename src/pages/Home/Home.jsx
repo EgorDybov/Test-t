@@ -1,8 +1,10 @@
 import { useSelector, useDispatch } from "react-redux";
-import { clearBlocks } from "../../store/slices/blocksSlice";
+import { clearBlocks, updateBlock } from "../../store/slices/blocksSlice";
 import BlockSelector from "../../components/BlockSelector/BlockSelector";
 import Block from "../../components/Block/Block";
 import styles from "./Home.module.scss";
+
+
 
 const Home = () => {
   const blocks = useSelector((store) => store.blocks.blocks);
@@ -13,6 +15,10 @@ const Home = () => {
       dispatch(clearBlocks());
     }
   };
+  
+
+
+
 
   return (
     <div className={styles.home}>
@@ -25,17 +31,21 @@ const Home = () => {
             </button>
           )}
         </div>
-        <div className={styles.blocksContainer}>
-          {blocks.map((block, index) => (
-            <div key={block.id} className={styles.blockWrapper}>
-              <Block
-                block={block}
-                isFirst={index === 0}
-                isLast={index === blocks.length - 1}
-              />
-            </div>
-          ))}
-        </div>
+        
+          <div className={styles.blocksContainer}>
+
+              {blocks.map((block, index) => (
+                <div key={block.id} className={styles.blockWrapper}>
+                  <Block
+                    block={block}
+                    isFirst={index === 0}
+                    isLast={index === blocks.length - 1}
+                  />
+                </div>
+              ))}
+
+          </div>
+
       </main>
     </div>
   );

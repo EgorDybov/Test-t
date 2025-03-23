@@ -1,5 +1,6 @@
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+
 import {
   updateBlock,
   removeBlock,
@@ -13,10 +14,11 @@ import EditorTestModal from "../EditorModal/EditorTestModal";
 
 const Block = ({ block, isFirst, isLast }) => {
   const [isEditing, setIsEditing] = useState(false);
+  const [text, setText] = useState('');
   const [isTextEditing, setTextIsEditing] = useState(false);
   const [isTestEditing, setTestIsEditing] = useState(false);
   const [showAnswer, setShowAnswer] = useState(false);
-  const [selectedAnswers, setSelectedAnswers] = useState([]);
+  const [selectedAnswers, setSelectedAnswers] = useState([])
   const dispatch = useDispatch();
 
   // TODO: Реализовать функцию редактирования блока
@@ -28,17 +30,11 @@ const Block = ({ block, isFirst, isLast }) => {
       setTextIsEditing(true);
     } else if(block.type === 'test') {
       setTestIsEditing(true);
-    }
-    
-    
+    }    
   };
-  // const handleTextEdit = () => {
-  //   setTextIsEditing(true);
-    
-  // };
-  // const handleQuestionEdit = () => {
-  //   setQuestionIsEditing(true);
-  // };
+
+  const ref = useRef(null)
+
 
   // TODO: Реализовать функцию сохранения изменений блока
   const handleSave = (newData) => {};
@@ -55,10 +51,26 @@ const Block = ({ block, isFirst, isLast }) => {
   const handleMoveDown = () => {};
 
   // TODO: Реализовать функцию обработки изменения ответа
-  const handleAnswerChange = (index, checked) => {};
+  const handleAnswerChange = (index, checked) => {
+    if(isMultipleChoice) {
+      if(checked) {
+        setSelectedAnswers([...selectedAnswers, index])
+      } else {
+        setSelectedAnswers(p => p.filter(item => item !== index))
+      }
+    } else {
+      setSelectedAnswers(prevArr => {
+        return prevArr.find(item => item === index) ? prevArr : [index]
+      })
+    }   
+  }
 
   // TODO: Реализовать функцию проверки ответа
-  const handleCheckAnswer = () => {};
+  const handleCheckAnswer = () => {
+    if(block.type === 'test'){
+      setShowAnswer(true)
+    }
+  }
 
   // TODO: Реализовать определение типа теста (множественный выбор)
   const isMultipleChoice = useMemo(()=> {
@@ -76,32 +88,61 @@ const Block = ({ block, isFirst, isLast }) => {
 
   // TODO: Реализовать проверку правильности ответа
   const isAnswerCorrect = (index) => {
-    return false;
-  };
-
+    
+    if(selectedAnswers.length === 0 || !showAnswer) return 
+    if(isMultipleChoice){
+      return true
+    } else {
+      if(selectedAnswers.includes(index) && block.content.options[index].isCorrect) {
+        // setText('Truehj')
+        return true
+      }
+      // const isCorrectIndex = block.content.options.findIndex(op => op.isCorrect===true)
+      // if(block.content.options[isCorrectIndex].isCorrect) {
+      //   return true
+      // }
+      return false
+    }
+  }
   // TODO: Реализовать проверку неправильности ответа
   const isAnswerIncorrect = (index) => {
-    return false;
-  };
+    if(selectedAnswers.length === 0 || !showAnswer) return
+    if(isMultipleChoice){
+
+    } else {
+      if(selectedAnswers.includes(index) && !block.content.options[index].isCorrect) {
+        // setText('Ffgalsy')
+        return true
+      }
+      return false
+    }
+  }
+
 
   const renderContent = () => {
     switch (block.type) {
       case "title":
         return (
-          <div className={styles.titleBlock}>
+          <div 
+            className={styles.titleBlock}
+          >
             <h2>{block.content.title}</h2>
             <img src={block.content.image} alt={block.content.title} />
           </div>
         );
       case "text":
         return (
-          <div className={styles.textBlock}>
+          <div 
+            className={styles.textBlock}
+          >
             <p>{block.content.text}</p>
           </div>
         );
       case "test":
         return (
-          <div className={styles.testBlock}>
+          <div ref={ref.current}
+            className={styles.testBlock} 
+          >
             <h3>{block.content.question}</h3>
             <div className={styles.options}>
               {block.content.options.map((option, index) => (
@@ -116,8 +157,9 @@ const Block = ({ block, isFirst, isLast }) => {
                       type={isMultipleChoice ? "checkbox" : "radio"}
                       name={`test-${block.id}`}
                       checked={selectedAnswers.includes(index)}
-                      onChange={(e) =>
+                      onChange={(e) => {
                         handleAnswerChange(index, e.target.checked)
+                        }
                       }
                       disabled={showAnswer}
                     />
@@ -136,6 +178,7 @@ const Block = ({ block, isFirst, isLast }) => {
             )}
             {showAnswer && (
               <div className={styles.result}>
+                {block.content.options[selectedAnswers[0]].isCorrect  ? 'Pravilno' : 'Net'}
                 {/* TODO: Реализовать отображение результата */}
               </div>
             )}
